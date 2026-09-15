@@ -7,14 +7,15 @@ class Piece:
         self.color = color
         self.position = -1  # -1 means in home, 0-51 is board position
         self.is_home = True
-        self.radius = 8
+        self.radius = 10
+        self.highlight = False
     
     def move(self, steps):
         """Move piece forward by steps"""
         if self.is_home and steps > 0:
             self.is_home = False
             self.position = 0
-        else:
+        elif not self.is_home:
             self.position += steps
         
         # Check if reached home (position 52+)
@@ -22,8 +23,13 @@ class Piece:
             self.is_home = True
             self.position = -1
     
-    def draw(self, screen, x, y):
+    def draw(self, screen, x, y, is_selected=False):
         """Draw the piece"""
+        # Draw outer circle if selected
+        if is_selected:
+            pygame.draw.circle(screen, (0, 200, 0), (x, y), self.radius + 5, 3)
+        
+        # Draw piece
         pygame.draw.circle(screen, self.color, (x, y), self.radius)
         pygame.draw.circle(screen, (0, 0, 0), (x, y), self.radius, 2)
 
@@ -60,9 +66,11 @@ class Player:
                 available.append(i)
         return available
     
-    def draw(self, screen):
+    def draw(self, screen, selected_piece=None):
         """Draw all pieces for this player"""
         for piece in self.pieces:
+            is_selected = (selected_piece == piece.piece_id)
+            
             if piece.is_home:
                 # Draw in home area
                 home_x = 60 + (piece.piece_id % 2) * 30
@@ -72,9 +80,9 @@ class Player:
                     home_x = 680 + (piece.piece_id % 2) * 30
                     home_y = 680 + (piece.piece_id // 2) * 30
                 
-                piece.draw(screen, home_x, home_y)
+                piece.draw(screen, home_x, home_y, is_selected)
             else:
                 # Draw on board
                 x = 50 + (piece.position % 17) * 40 + 20
                 y = 50 + (piece.position // 17) * 40 + 20
-                piece.draw(screen, x, y)
+                piece.draw(screen, x, y, is_selected)
